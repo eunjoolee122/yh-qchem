@@ -2,6 +2,7 @@ import getpass
 import glob
 import logging
 import os
+import socket       #This method requires that we create our own socket
 from collections import Counter
 
 import fabric
@@ -61,6 +62,39 @@ def ssh_connect_password(host, user) -> fabric.Connection:
     c.client = client
     c.transport = client.get_transport()
 
+    return c
+
+def inter_handler(title, instructions, prompt_list):
+    resp = []
+
+    for pr in prompt_list:
+        if pr[0].strip() == "Password:":
+            return [getpass.getpass(pr[0])]
+        else:
+            return [getpass.getpass(pr[0])]
+        
+    return []
+
+
+def ssh_connect_otp(host, user, port=22) -> paramiko.client.SSHClient:
+    """Create ssh connection using fabric and paramiko, password and OTP (without DUO authentication).
+
+    :param host: remote host
+    :param user: username to authenticate on remote host
+    :return: paramiko.client.SSHClient
+    """
+
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())   #Don't care about host keys
+    try:
+        client.connect(host, port, username=user, pkey=None)
+    except paramiko.ssh_exception.SSHException as e:
+        client.get_transport().auth_interactive(user, inter_handler)
+
+    c = fabric.Connection(host)
+    c.client = client
+    c.transport = client.get_transport()
+    
     return c
 
 
