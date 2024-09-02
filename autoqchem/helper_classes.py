@@ -14,10 +14,10 @@ config = {
         'ram_per_processor': 2,
     },
     'mongoDB':{
-        'host': "autoqchem.org",
+        'host': "localhost", #"autoqchem.org",
         'port': 27017,
-        'user': "acqWriter",
-        'password': "dftworks",
+        #'user': "acqWriter",
+        #'password': "dftworks",
     }
 }
 

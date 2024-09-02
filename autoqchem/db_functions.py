@@ -23,8 +23,17 @@ conf_options_long = ['Boltzman Average', 'Lowest Energy Conformer', 'Highest Ene
 
 
 def db_connect(collection=None) -> pymongo.collection.Collection:
+    """Create a connection to the database and return the table (Collection).
 
-    cli = pymongo.MongoClient('localhost', 21071)
+    :param collection: database collection name (optional)
+    :type collection: str
+    :return: pymongo.collection.Collection
+    """
+
+    cli = pymongo.MongoClient(config['mongoDB']['host'],
+                              username=config['mongoDB']['user'],
+                              password=config['mongoDB']['password'],
+                              port=config['mongoDB']['port'])
     if collection is None:
         return cli['autoqchem']
     else:

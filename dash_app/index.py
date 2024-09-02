@@ -10,7 +10,7 @@ import flask
 import pandas as pd
 from dash.dependencies import Input, Output, State
 
-from autoqchem.db_functions import Chem, descriptors, InconsistentLabelsException, db_connect
+from autoqchem.db_local_functions import Chem, descriptors, InconsistentLabelsException, db_connect
 from dash_app.app import app, server
 from dash_app.functions import app_path, get_table, get_tags_dropdown
 from dash_app.layouts import layout_table, layout_descriptors, layout_navbar
@@ -175,5 +175,5 @@ def conf_energy(value, data):
 
 
 if __name__ == '__main__':
-    server.run(port=80)
+    server.run(host='0.0.0.0', port=8050)
     # app.run_server(debug=True, port=80)

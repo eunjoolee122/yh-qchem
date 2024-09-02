@@ -8,7 +8,7 @@ from dash_app.functions import *
 from autoqchem.rdkit_utils import extract_from_rdmol
 
 # jmolcolors = pd.read_csv("assets/jmolcolors.csv").set_index('atom')['Hex']
-jmolcolors = pd.read_csv("/home/ubuntu/github/auto-qchem/dash_app/assets/jmolcolors.csv").set_index('atom')['Hex']
+jmolcolors = pd.read_csv("./assets/jmolcolors.csv").set_index('atom')['Hex']
 
 
 def layout_navbar():
@@ -22,7 +22,8 @@ def layout_navbar():
                         dbc.Col(html.Img(src="/assets/logo.png", height="40px")),
                         dbc.Col(dbc.NavbarBrand("Auto-QChem DB", className='ml-2'))
                     ],
-                    no_gutters=True,
+                    #no_gutters=True,
+                    style={"padding": "0"} ,
                     align='center'
                 ),
                 href="/"),
@@ -140,7 +141,8 @@ def layout_table(tag='ALL', substructure=None, smiles=None, solvent='ALL', funct
                                               html.Td(
                                                   dbc.Button('Query', id='submit_query-form',
                                                              color="primary",
-                                                             block=True,
+                                                             #lock=True,
+                                                             style={'width': '100%'},
                                                              type='submit',
                                                              ), colSpan=2)),
                                       ],
@@ -153,7 +155,7 @@ def layout_table(tag='ALL', substructure=None, smiles=None, solvent='ALL', funct
     export_summary_form = html.Form(id='export-summary-form',
                                     method='post', children=[
             dbc.Table(html.Tbody(html.Tr(html.Td(
-                dbc.Button('Export List', id='submit_export-summary-form', color="primary", block=True)))),
+                dbc.Button('Export List', id='submit_export-summary-form', color="primary", style={'width': '100%'})))),
                 borderless=True),
             dbc.Input(name="export", id='export', style={'display': 'none'}),
         ])
@@ -179,7 +181,7 @@ def layout_table(tag='ALL', substructure=None, smiles=None, solvent='ALL', funct
                     )
                 )),
                 html.Tr(html.Td(
-                    dbc.Button('Download', id='submit_export-form', color="primary", block=True)
+                    dbc.Button('Download', id='submit_export-form', color="primary", style={'width': '100%'}) #block=True)
                 ))]),
                 borderless=True),
             dcc.Input(name="PresetOptions", id="inputPresetOptions", style={'display': 'none'}),

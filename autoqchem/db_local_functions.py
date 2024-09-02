@@ -22,6 +22,7 @@ conf_options_long = ['Boltzman Average', 'Lowest Energy Conformer', 'Highest Ene
                      'Standard Deviation', 'Random']
 
 
+
 def db_connect(collection=None) -> pymongo.collection.Collection:
     """Create a connection to the database and return the table (Collection).
 
@@ -30,24 +31,7 @@ def db_connect(collection=None) -> pymongo.collection.Collection:
     :return: pymongo.collection.Collection
     """
 
-    cli = pymongo.MongoClient(config['mongoDB']['host'],
-                              username=config['mongoDB']['user'],
-                              password=config['mongoDB']['password'],
-                              port=config['mongoDB']['port'])
-    if collection is None:
-        return cli['autoqchem']
-    else:
-        return cli['autoqchem'][collection]
-
-def db_connect_local(collection=None) -> pymongo.collection.Collection:
-    """Create a connection to the database and return the table (Collection).
-
-    :param collection: database collection name (optional)
-    :type collection: str
-    :return: pymongo.collection.Collection
-    """
-
-    cli = pymongo.MongoClient('localhost', 21071)
+    cli = pymongo.MongoClient('localhost', 27017)
     if collection is None:
         return cli['autoqchem']
     else:
@@ -72,8 +56,7 @@ def db_upload_molecule(mol_data, tags, metadata, weights, conformations, logs) -
     :return: bson.objectid.ObjectId
     """
 
-    #db = db_connect()
-    db = db_connect_local()
+    db = db_connect()
     mols_coll = db['molecules']
     tags_coll = db['tags']
 
@@ -112,8 +95,7 @@ def db_upload_conformation(mol_id, weight, conformation, log, check_mol_exists=T
     :type check_mol_exists: bool
     """
 
-    #db = db_connect()
-    db = db_connect_local()
+    db = db_connect()
     # check if the molecule with a given id exists in the DB
     mols_coll = db["molecules"]
     if check_mol_exists:
@@ -188,7 +170,7 @@ def db_select_molecules(tags=[], substructure="", smiles="", solvent="ALL",
     if molecule_ids:
         filter['_id'] = {'$in': molecule_ids}
     else:
-        filter['_id'] = {'$in': tags_df.molecule_id.tolist()}
+        filter['_id'] = {'$in': tags_df['molecule_id'].tolist()}
 
     if solvent != 'ALL':
         filter['metadata.gaussian_config.solvent'] = re.compile(f"^{re.escape(solvent)}$", re.IGNORECASE)
@@ -229,7 +211,7 @@ def db_select_molecules(tags=[], substructure="", smiles="", solvent="ALL",
     df['metadata_str'] = df['metadata'].map(repr)
     grouped = df.groupby(['can', 'metadata_str'])
     # groupby tags
-    df = pd.concat([grouped['metadata', 'molecule_id', 'name'].first(),
+    df = pd.concat([grouped[['metadata', 'molecule_id', 'name']].first(),
                     grouped['tag'].apply(list)], axis=1).reset_index().drop('metadata_str', axis=1)
 
     # fetch ids and weights
@@ -398,7 +380,7 @@ def descriptors(tags, presets, conf_option, solvent, functional, basis_set, subs
     data = {}
 
     if 'global' in presets:
-        dg = pd.concat([d['descriptors'] for can, d in descs_df.iteritems()], axis=1, sort=True)
+        dg = pd.concat([d['descriptors'] for can, d in descs_df.items()], axis=1, sort=True)
         dg.columns = descs_df.index
         data['global'] = dg.T
 

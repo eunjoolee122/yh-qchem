@@ -1,10 +1,10 @@
 import hashlib
 
-from autoqchem.db_functions import *
+from autoqchem.db_local_functions import *
 from autoqchem.molecule import *
 
-app_path = "/home/ubuntu/github/auto-qchem/dash_app"
-
+#app_path = "/home/yh-qchem/dash_app"
+app_path = "."
 
 # app_path = "C:/Users/AndrzejZuranski/Dropbox/DataX_PU/github/auto-qchem/dash_app"
 
