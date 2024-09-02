@@ -4,7 +4,7 @@ from contextlib import suppress
 
 import appdirs
 
-from autoqchem.db_functions import *
+from autoqchem.db_local_functions import *
 from autoqchem.gaussian_input_generator import *
 from autoqchem.gaussian_log_extractor import *
 from autoqchem.helper_functions import *
@@ -160,7 +160,7 @@ class pbs_manager(object):
                             job_id=-1,  # job_id (not assigned yet)
                             directory=gig.directory,  # filesystem path
                             base_name=base_name,  # filesystem basename
-                            status=slurm_status.created,
+                            status=pbs_status.created,
                             n_submissions=0,
                             n_success_tasks=0)  # status
 
@@ -218,37 +218,40 @@ class pbs_manager(object):
 
     
     def parse_qstat_output(self):
-        output = self.connection.run(f"qstat -i -w -T -u {self.user}", hide=True)
+        output = self.connection.run(f"qstat -u {self.user}", pty=False, timeout=5)
         # 각 줄을 개행 문자로 분리
-        lines = output.strip().split("\n")
-
-        # 결과를 담을 리스트
-        jobs = []
-
-        # job 정보를 포함하는 줄들만 필터링
-        for line in lines:
-            # 첫 줄이 제목일 수 있으므로 길이가 충분한지 확인 후 처리
-            if len(line) > 40 and not line.startswith("Job ID"):
-                # 공백이 여러 개로 구분되어 있으므로 정규 표현식으로 분리
-                columns = re.split(r'\s+', line)
-
-                # 결과를 딕셔너리로 저장
-                job_info = {
-                    'Job ID': columns[0],
-                    'Username': columns[1],
-                    'Queue': columns[2],
-                    'Jobname': columns[3],
-                    'SessID': columns[4],
-                    'Nodes': columns[5],
-                    'Tasks': columns[6],
-                    'Memory': columns[7],
-                    'Req Time': columns[8],
-                    'State': columns[9],
-                    'Est Start Time': columns[10] if len(columns) > 10 else '--'
-                }
-                jobs.append(job_info)
-
-        return jobs
+        if output.stdout == '':
+            return []
+        else:
+            lines = output.strip().split("\n")
+    
+            # 결과를 담을 리스트
+            jobs = []
+    
+            # job 정보를 포함하는 줄들만 필터링
+            for line in lines:
+                # 첫 줄이 제목일 수 있으므로 길이가 충분한지 확인 후 처리
+                if len(line) > 40 and not line.startswith("Job ID"):
+                    # 공백이 여러 개로 구분되어 있으므로 정규 표현식으로 분리
+                    columns = re.split(r'\s+', line)
+    
+                    # 결과를 딕셔너리로 저장
+                    job_info = {
+                        'Job ID': columns[0],
+                        'Username': columns[1],
+                        'Queue': columns[2],
+                        'Jobname': columns[3],
+                        'SessID': columns[4],
+                        'Nodes': columns[5],
+                        'Tasks': columns[6],
+                        'Memory': columns[7],
+                        'Req Time': columns[8],
+                        'State': columns[9],
+                        'Est Start Time': columns[10] if len(columns) > 10 else '--'
+                    }
+                    jobs.append(job_info)
+    
+            return jobs
 
     def retrieve_jobs(self) -> None:
         """Retrieve finished jobs from remote host and check which finished successfully and which failed."""
@@ -262,7 +265,7 @@ class pbs_manager(object):
         self.connect()
 
         # retrieve job ids that are running on the server
-        jobs_remote = parse_qstat_output()
+        jobs_remote = self.parse_qstat_output()
         user_running_ids = [job['Job ID'] for job in jobs_remote]
         running_ids = [id for id in user_running_ids if id in ids_to_check]
         finished_ids = [id for id in ids_to_check if id not in running_ids]
@@ -603,7 +606,7 @@ class pbs_manager(object):
 
         self.connect()
         self.connection.run(f"scancel -u {self.user}")
-        self.remove_jobs(self.get_jobs(status=slurm_status.submitted))
+        self.remove_jobs(self.get_jobs(status=pbs_status.submitted))
 
     def _cache(self) -> None:
         """save jobs under management and cleanup empty directories"""

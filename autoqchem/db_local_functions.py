@@ -23,6 +23,29 @@ conf_options_long = ['Boltzman Average', 'Lowest Energy Conformer', 'Highest Ene
 
 
 def db_connect(collection=None) -> pymongo.collection.Collection:
+    """Create a connection to the database and return the table (Collection).
+
+    :param collection: database collection name (optional)
+    :type collection: str
+    :return: pymongo.collection.Collection
+    """
+
+    cli = pymongo.MongoClient(config['mongoDB']['host'],
+                              username=config['mongoDB']['user'],
+                              password=config['mongoDB']['password'],
+                              port=config['mongoDB']['port'])
+    if collection is None:
+        return cli['autoqchem']
+    else:
+        return cli['autoqchem'][collection]
+
+def db_connect_local(collection=None) -> pymongo.collection.Collection:
+    """Create a connection to the database and return the table (Collection).
+
+    :param collection: database collection name (optional)
+    :type collection: str
+    :return: pymongo.collection.Collection
+    """
 
     cli = pymongo.MongoClient('localhost', 21071)
     if collection is None:
@@ -49,7 +72,8 @@ def db_upload_molecule(mol_data, tags, metadata, weights, conformations, logs) -
     :return: bson.objectid.ObjectId
     """
 
-    db = db_connect()
+    #db = db_connect()
+    db = db_connect_local()
     mols_coll = db['molecules']
     tags_coll = db['tags']
 
@@ -88,7 +112,8 @@ def db_upload_conformation(mol_id, weight, conformation, log, check_mol_exists=T
     :type check_mol_exists: bool
     """
 
-    db = db_connect()
+    #db = db_connect()
+    db = db_connect_local()
     # check if the molecule with a given id exists in the DB
     mols_coll = db["molecules"]
     if check_mol_exists:
