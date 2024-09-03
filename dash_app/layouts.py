@@ -20,7 +20,7 @@ def layout_navbar():
                 dbc.Row(
                     [
                         dbc.Col(html.Img(src="/assets/logo.png", height="40px")),
-                        dbc.Col(dbc.NavbarBrand("Auto-QChem DB", className='ml-2'))
+                        dbc.Col(dbc.NavbarBrand("Yuhan-QChem DB", className='ml-2'))
                     ],
                     #no_gutters=True,
                     style={"padding": "0"} ,

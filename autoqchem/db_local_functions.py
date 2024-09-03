@@ -385,8 +385,8 @@ def descriptors(tags, presets, conf_option, solvent, functional, basis_set, subs
         data['global'] = dg.T
 
     if 'min_max' in presets:
-        dmin = pd.concat([d['atom_descriptors'].min() for can, d in descs_df.iteritems()], axis=1, sort=True)
-        dmax = pd.concat([d['atom_descriptors'].max() for can, d in descs_df.iteritems()], axis=1, sort=True)
+        dmin = pd.concat([d['atom_descriptors'].min() for can, d in descs_df.items()], axis=1, sort=True)
+        dmax = pd.concat([d['atom_descriptors'].max() for can, d in descs_df.items()], axis=1, sort=True)
         dmin.columns = descs_df.index
         dmax.columns = descs_df.index
         data['min'] = dmin.T
@@ -397,7 +397,7 @@ def descriptors(tags, presets, conf_option, solvent, functional, basis_set, subs
         try:
             ts = pd.concat([d['transitions'].sort_values("ES_osc_strength",
                                                          ascending=False).head(10).reset_index(drop=True).unstack()
-                            for can, d in descs_df.iteritems()], axis=1, sort=True)
+                            for can, d in descs_df.items()], axis=1, sort=True)
             ts.index = ts.index.map(lambda i: "_".join(map(str, i)))
             ts.columns = descs_df.index
             data['transitions'] = ts.T
