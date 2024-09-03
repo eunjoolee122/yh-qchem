@@ -131,12 +131,12 @@ class pbs_manager(object):
                            'max_light_atomic_number': max_light_atomic_number}
 
         # DB check if the same molecule with the same gaussian configuration already exists
-        #exists, tags = db_check_exists(molecule.inchi, gaussian_config,
-        #                               molecule.max_num_conformers, molecule.conformer_engine)
-        #if exists:
-        #    logger.warning(f"Molecule {molecule.inchi} already exists with the same Gaussian config with tags {tags}."
-        #                   f" Not creating jobs.")
-        #    return
+        exists, tags = db_check_exists(molecule.inchi, gaussian_config,
+                                       molecule.max_num_conformers, molecule.conformer_engine)
+        if exists:
+            logger.warning(f"Molecule {molecule.inchi} already exists with the same Gaussian config with tags {tags}."
+                           f" Not creating jobs.")
+            return
 
         gig.create_gaussian_files()
         
