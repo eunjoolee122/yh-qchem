@@ -223,13 +223,13 @@ class pbs_manager(object):
         if output.stdout == '':
             return []
         else:
-            lines = output.strip().split("\n")
+            lines = output.stdout.strip().split("\n")
     
             # 결과를 담을 리스트
             jobs = []
     
             # job 정보를 포함하는 줄들만 필터링
-            for line in lines:
+            for line in lines[4:]:
                 # 첫 줄이 제목일 수 있으므로 길이가 충분한지 확인 후 처리
                 if len(line) > 40 and not line.startswith("Job ID"):
                     # 공백이 여러 개로 구분되어 있으므로 정규 표현식으로 분리
@@ -237,7 +237,7 @@ class pbs_manager(object):
     
                     # 결과를 딕셔너리로 저장
                     job_info = {
-                        'Job ID': columns[0],
+                        'Job ID': columns[0][:-4],
                         'Username': columns[1],
                         'Queue': columns[2],
                         'Jobname': columns[3],
@@ -271,12 +271,14 @@ class pbs_manager(object):
         finished_ids = [id for id in ids_to_check if id not in running_ids]
 
         logger.info(f"There are {len(running_ids)} running/pending jobs, {len(finished_ids)} finished jobs.")
+        print(f"There are {len(running_ids)} running/pending jobs, {len(finished_ids)} finished jobs.")
 
         # get finished jobs
         finished_jobs = {name: job for name, job in self.jobs.items() if job.job_id in finished_ids}
         done_jobs = 0
 
         if finished_jobs:
+            self.connect_sftp()
             logger.info(f"Retrieving log files of finished jobs.")
             for job in finished_jobs.values():
                 status = self._retrieve_single_job(job)
