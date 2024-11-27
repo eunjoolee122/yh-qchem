@@ -8,7 +8,7 @@ from dash_app.functions import *
 from autoqchem.rdkit_utils import extract_from_rdmol
 
 # jmolcolors = pd.read_csv("assets/jmolcolors.csv").set_index('atom')['Hex']
-jmolcolors = pd.read_csv("./assets/jmolcolors.csv").set_index('atom')['Hex']
+jmolcolors = pd.read_csv("assets/jmolcolors.csv").set_index('atom')['Hex']
 
 
 def layout_navbar():
@@ -19,7 +19,7 @@ def layout_navbar():
             html.A(
                 dbc.Row(
                     [
-                        dbc.Col(html.Img(src="/assets/logo.png", height="40px")),
+                        dbc.Col(html.Img(src="assets/logo.png", height="40px")),
                         dbc.Col(dbc.NavbarBrand("Yuhan-QChem DB", className='ml-2'))
                     ],
                     #no_gutters=True,

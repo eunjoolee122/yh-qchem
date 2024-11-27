@@ -4,6 +4,7 @@ import re
 import pandas as pd
 import numpy as np
 import pymongo
+from pymongo.collection import Collection
 from bson.objectid import ObjectId
 from rdkit import Chem
 from rdkit.Chem import rdFMCS
@@ -23,7 +24,7 @@ conf_options_long = ['Boltzman Average', 'Lowest Energy Conformer', 'Highest Ene
 
 
 
-def db_connect(collection=None) -> pymongo.collection.Collection:
+def db_connect(collection=None) -> Collection:
     """Create a connection to the database and return the table (Collection).
 
     :param collection: database collection name (optional)

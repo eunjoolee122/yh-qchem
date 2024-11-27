@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class pbs_manager(object):
     """PBS manager class."""
 
-    def __init__(self, user, host, sftp_host=None, remote_dir=None):
+    def __init__(self, user, host, workdir=None, sftp_host=None, remote_dir=None):
         """Initialize pbs manager and load the cache file.
 
         :param user: username at remote host
@@ -27,7 +27,10 @@ class pbs_manager(object):
         """
 
         # set workdir and cache file
-        self.workdir = appdirs.user_data_dir(appauthor="autoqchem", appname=host.split('.')[0])   # appname = "nurion"
+        if workdir is None:
+            self.workdir = appdirs.user_data_dir(appauthor="yhqchem", appname=host.split('.')[0])   # appname = "nurion"
+        else:
+            self.workdir = workdir
         self.cache_file = os.path.join(self.workdir, "pbs_manager.pkl")
         os.makedirs(self.workdir, exist_ok=True)
 
