@@ -17,13 +17,15 @@ logger = logging.getLogger(__name__)
 class pbs_manager(object):
     """PBS manager class."""
 
-    def __init__(self, user, host, workdir=None, sftp_host=None, remote_dir=None):
+    def __init__(self, user, host, workdir=None, sftp_host=None, remote_dir=None, job_file=None):
         """Initialize pbs manager and load the cache file.
 
         :param user: username at remote host
         :type user: str
         :param host: remote host name
         :type host: str
+        :param job_file: prefix for pbs_manager.pkl
+        :type job_file: str
         """
 
         # set workdir and cache file
@@ -31,7 +33,10 @@ class pbs_manager(object):
             self.workdir = appdirs.user_data_dir(appauthor="yhqchem", appname=host.split('.')[0])   # appname = "nurion"
         else:
             self.workdir = workdir
-        self.cache_file = os.path.join(self.workdir, "pbs_manager.pkl")
+        if job_file is not None:
+            self.cache_file = os.path.join(self.workdir, f"{job_file}_pbs_manager.pkl")
+        else:
+            self.cache_file = os.path.join(self.workdir, "pbs_manager.pkl")
         os.makedirs(self.workdir, exist_ok=True)
 
         self.jobs = {}  # jobs under management
@@ -124,6 +129,7 @@ class pbs_manager(object):
 
         # create gaussian files
         molecule_workdir = os.path.join(self.workdir, molecule.inchikey)
+        molecule_workdir = str(molecule_workdir).replace('\\', '/')
         gig = gaussian_input_generator(molecule, workflow_type, molecule_workdir, theory, solvent, light_basis_set,
                                        heavy_basis_set, generic_basis_set, max_light_atomic_number)
         gaussian_config = {'theory': theory,
@@ -145,7 +151,7 @@ class pbs_manager(object):
         
         # create pbs files
         for gjf_file in glob.glob(f"{molecule_workdir}/*.gjf"):
-
+            gjf_file = str(gjf_file).replace('\\', '/')
             base_name = os.path.basename(os.path.splitext(gjf_file)[0])
             self._create_pbs_file_from_gaussian_file(base_name, molecule_workdir, wall_time)
             # create job structure
@@ -423,7 +429,7 @@ class pbs_manager(object):
 
         done_jobs = self.get_jobs(pbs_status.done)
         if not done_jobs:
-            logger.info("There are no jobs in done status. Exitting.")
+            logger.info("There are no jobs in done status. Exitting.") 
             return
 
         # check if there are molecules with all jobs done
@@ -440,7 +446,9 @@ class pbs_manager(object):
 
         for done_can in done_cans:
             (keys, jobs) = zip(*self.get_jobs(can=done_can).items())
+            print(keys)
             rdmol, energies, labels_ok = rdmol_from_slurm_jobs(jobs, postDFT=True)
+            print(labels_ok)
             if labels_ok:
                 keep = prune_rmsds(rdmol, RMSD_threshold)
                 logger.info(f"Molecule {done_can} has {len(keys) - len(keep)} / {len(keys)} duplicate conformers.")
@@ -509,7 +517,7 @@ class pbs_manager(object):
             # add descriptors to conformations list
             conformations.append(le.get_descriptors())
             logs.append(le.log)
-
+        print(len(conformations))
         # compute weights
         free_energies = np.array(
             [Hartree_in_kcal_per_mol * c['descriptors']['G'] for c in conformations])  # in kcal_mol
